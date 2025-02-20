@@ -16,28 +16,38 @@ class JobStatus (str, Enum):
 
 class Job(BaseModel):
     id: str                     
-    name: str                   
-    username: str               
+    username: str
+    team: str               
     resource: Resource          
     replicas: int = 1           
-    submitted_at: datetime      
-    status: JobStatus           
-    priority: int = Field(ge=0, le=100, description="Job priority (0-100)")
-    job_image: str
-    job_script: str
-    input_path: str
-    output_path: str
+    submitted_at: datetime
+    last_updated_at: datetime      
+    status: JobStatus
+    preemption: bool = False           
+    # Runtime fields can be added here
+    # job_image: str
+    # job_script: str
+    # input_path: str
+    # output_path: str
     
-    @model_validator(pre=True)
-    def validate_resource(cls, v):
-        if not v.accepeted_gpu:
-            raise ValueError("Resource must have at least one GPU type")
-        return v
+    # TODO: these values may only be obtainabled from JobManager since a job can be preempted multiple times
+    def get_waiting_time(self) -> datetime:
+        if self.status == JobStatus.SUBMITTED or self.status == JobStatus.PENDING:
+            return datetime.now() - self.submitted_at
+        if self.status == JobStatus.SCHEDULED:
+            return self.last_updated_at - self.submitted_at
+        # TODO: what if the job is preempted?
+        return None
     
+    def get_running_time(self) -> datetime:
+        if self.status == JobStatus.RUNNING:
+            return datetime.now() - self.last_updated_at
+        # TODO: what if the job was running and then preempted and now running?
+        return None
 
-class JobRecord(BaseModel):
-    id: str                     # Unique identifier for the job
-    status: JobStatus           # Status of the job
-    last_updated: datetime      # Time when the job status was last updated
-    
-
+    def get_total_time(self) -> datetime:
+        if self.status == JobStatus.COMPLETED or self.status == JobStatus.FAILED:
+            return self.last_updated_at - self.submitted_at
+        else:
+            # TODO: what if the job is preempted?
+            return datetime.now() - self.submitted_at
