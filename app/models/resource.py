@@ -10,7 +10,8 @@ class GPUTypes(str, Enum):
 
 
 class Resource(BaseModel):
-    gpu: Dict[GPUTypes, int]
-    cpu: float
-    memory_mb: float
-    disk_gb: float
+    # For example, {"A100": 2, "H100": 2} means that resource requires either 2 A100 GPUs or 2 H100 GPUs
+    accepeted_gpu: Dict[GPUTypes, int]
+    cpu: float = 4.0
+    memory_mb: float = 4096.0
+    disk_gb: float = 100.0

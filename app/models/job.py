@@ -1,5 +1,7 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator, Field
 from enum import Enum
+from datetime import datetime
+from app.models.resource import Resource
 
 
 class JobStatus (str, Enum):
@@ -13,10 +15,29 @@ class JobStatus (str, Enum):
 
 
 class Job(BaseModel):
-    id: str
-    name: str
-    username: str
-    team: str
-    status: JobStatus
+    id: str                     
+    name: str                   
+    username: str               
+    resource: Resource          
+    replicas: int = 1           
+    submitted_at: datetime      
+    status: JobStatus           
+    priority: int = Field(ge=0, le=100, description="Job priority (0-100)")
+    job_image: str
+    job_script: str
+    input_path: str
+    output_path: str
+    
+    @model_validator(pre=True)
+    def validate_resource(cls, v):
+        if not v.accepeted_gpu:
+            raise ValueError("Resource must have at least one GPU type")
+        return v
+    
+
+class JobRecord(BaseModel):
+    id: str                     # Unique identifier for the job
+    status: JobStatus           # Status of the job
+    last_updated: datetime      # Time when the job status was last updated
     
 
