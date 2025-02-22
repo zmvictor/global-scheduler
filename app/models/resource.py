@@ -12,9 +12,9 @@ class GPUTypes(str, Enum):
 class Resource(BaseModel):
     # For example, {"A100": 2, "H100": 2} means that resource requires either 2 A100 GPUs or 2 H100 GPUs
     accepeted_gpu: Dict[GPUTypes, int]
-    cpu: float = Field(gt=0, description="CPU in cores", example=2.0, default=2.0)
-    memory_mb: float = Field(gt=0, description="Memory in MB", example=4096.0, default=4096.0)
-    disk_gb: float = Field(gt=0, description="Disk in GB", example=100.0, default=100.0)
+    cpu: float = Field(gt=0, description="CPU in cores", default=2.0)
+    memory_mb: float = Field(gt=0, description="Memory in MB", default=4096.0)
+    disk_gb: float = Field(gt=0, description="Disk in GB", default=100.0)
     
     @field_validator('accepeted_gpu')
     def gpu_count_must_be_positive(cls, v: Dict[GPUTypes, int]) -> Dict[GPUTypes, int]:
