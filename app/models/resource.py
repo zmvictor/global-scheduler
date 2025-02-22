@@ -22,5 +22,5 @@ class Resource(BaseModel):
             if count <= 0:
                 raise ValueError(f"GPU count for {gpu_type} must be positive")
         return v
-    
-    
+
+    # TODO: Resource should support addition and subtraction
