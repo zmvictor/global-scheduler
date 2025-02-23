@@ -55,3 +55,8 @@ class GlobalResourceManager(ResourceManager):
         return None
     
     
+    
+    
+    
+    
+    

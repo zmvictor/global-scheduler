@@ -16,11 +16,46 @@ class Resource(BaseModel):
     memory_mb: float = Field(gt=0, description="Memory in MB", default=4096.0)
     disk_gb: float = Field(gt=0, description="Disk in GB", default=100.0)
     
-    @field_validator('accepeted_gpu')
-    def gpu_count_must_be_positive(cls, v: Dict[GPUTypes, int]) -> Dict[GPUTypes, int]:
-        for gpu_type, count in v.items():
-            if count <= 0:
-                raise ValueError(f"GPU count for {gpu_type} must be positive")
-        return v
+    def is_valid(self) -> bool:
+        for count in self.accepeted_gpu.values():
+            if count < 0:
+                return False
+        return self.cpu >= 0 and self.memory_mb >= 0 and self.disk_gb >= 0
 
     # TODO: Resource should support addition and subtraction
+    def __add__(self, other: "Resource") -> "Resource":
+        if not isinstance(other, Resource):
+            return NotImplemented
+
+        accepeted_gpu = self.accepeted_gpu.copy()
+        for gpu_type, count in other.accepeted_gpu.itmes():
+            if gpu_type in accepeted_gpu:
+                accepeted_gpu[gpu_type] += count
+            else:
+                accepeted_gpu[gpu_type] = count
+
+        return Resource(
+            accepeted_gpu = accepeted_gpu,
+            cpu = self.cpu + other.cpu,
+            memory_mb = self.memory_mb + other.memory_mb,
+            disk_gb = self.disk_gb + other.disk_gb
+        )
+        
+    
+    def __sub__(self, other: "Resource") -> "Resource":
+        if not isinstance(other, Resource):
+            return NotImplemented
+        
+        accepeted_gpu = self.accepeted_gpu.copy()
+        for gpu_type, count in other.accepeted_gpu.itmes():
+            if gpu_type in accepeted_gpu:
+                accepeted_gpu[gpu_type] -= count
+            else:
+                accepeted_gpu[gpu_type] = -count
+        
+        return Resource(
+            accepeted_gpu = accepeted_gpu,
+            cpu = self.cpu - other.cpu,
+            memory_mb = self.memory_mb - other.memory_mb,
+            disk_gb = self.disk_gb - other.disk_gb
+        )
