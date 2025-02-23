@@ -17,10 +17,11 @@ class Resource(BaseModel):
     disk_gb: float = Field(gt=0, description="Disk in GB", default=100.0)
     
     def is_valid(self) -> bool:
+        valid_gpu_exists = False
         for count in self.accepeted_gpu.values():
-            if count < 0:
-                return False
-        return self.cpu >= 0 and self.memory_mb >= 0 and self.disk_gb >= 0
+            if count >= 0:
+                valid_gpu_exists = True
+        return valid_gpu_exists and self.cpu >= 0 and self.memory_mb >= 0 and self.disk_gb >= 0
 
     # TODO: Resource should support addition and subtraction
     def __add__(self, other: "Resource") -> "Resource":
@@ -28,7 +29,7 @@ class Resource(BaseModel):
             return NotImplemented
 
         accepeted_gpu = self.accepeted_gpu.copy()
-        for gpu_type, count in other.accepeted_gpu.itmes():
+        for gpu_type, count in other.accepeted_gpu.items():
             if gpu_type in accepeted_gpu:
                 accepeted_gpu[gpu_type] += count
             else:
@@ -47,7 +48,7 @@ class Resource(BaseModel):
             return NotImplemented
         
         accepeted_gpu = self.accepeted_gpu.copy()
-        for gpu_type, count in other.accepeted_gpu.itmes():
+        for gpu_type, count in other.accepeted_gpu.items():
             if gpu_type in accepeted_gpu:
                 accepeted_gpu[gpu_type] -= count
             else:
