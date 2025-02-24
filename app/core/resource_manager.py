@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 from app.models.resource import Resource
-from typing import List, TypeAlias, Optional, Generic, TypeVar, Sequence
+from typing import List, TypeAlias, Optional, Generic, TypeVar, Sequence, Tuple
 import random
 
 T = TypeVar('T')
+ResourceReplica: TypeAlias = Tuple[Resource, int]
 
 class ResourceManager(ABC, Generic[T]):
     '''
@@ -12,34 +13,60 @@ class ResourceManager(ABC, Generic[T]):
     '''
     @abstractmethod
     def allocatable(self, resource: Resource) -> Sequence[T]:
-        pass
-
-    @abstractmethod
-    def allocatable(self, resource_list: List[Resource]) -> Sequence[T]:
+        '''
+        Check if the resource is allocatable and return the list of alloctable slots in the resource manager
+        '''
         pass
 
     @abstractmethod
     def allocate(self, resource: Resource) -> Optional[T]:
+        '''
+        Allocate the resource and return the slot where the resource is allocated
+        '''
         pass
     
     @abstractmethod
-    def allocate(self, resource_list: List[Resource]) -> Optional[T]:
+    def allocatable(self, resources: List[ResourceReplica]) -> Sequence[T]:
+        '''
+        Check if the resources are allocatable and return the list of alloctable slots in the resource manager
+        '''
+        pass
+
+    @abstractmethod
+    def allocate(self, resources: List[ResourceReplica]) -> Optional[T]:
+        '''
+        Allocate the resources and return the slot where the resources are allocated
+        '''
         pass
 
 NodeResourceManager: TypeAlias = ResourceManager
 
-class ClusterResourceManager(ResourceManager):
+class ClusterResourceManager(ResourceManager[NodeResourceManager]):
     def __init__(self, name: str, nodes: List[NodeResourceManager]):
         self._name = name,
         self._nodes = nodes
     
-    def allocatable(self, resource: Resource) -> List[NodeResourceManager]:
-        # TODO: Implement the logic to check if the resource is allocatable
-        return []
-    
+    def allocatable(self, resource: Resource) -> Sequence[NodeResourceManager]:
+        alloctable_nodes = []
+
+        for node in self._nodes:
+            alloctable_nodes.extend(node.allocatable(resource))
+
+        return alloctable_nodes
+
     def allocate(self, resource: Resource) -> Optional[NodeResourceManager]:
-        # TODO: Implement the logic to allocate the resource
+        alloctable_nodes = self.allocatable(resource)
+        if alloctable_nodes:
+            node = random.choice(alloctable_nodes)
+            node.allocate(resource)
+            return node
         return None
+    
+    def allocatable(self, resources: List[ResourceReplica]) -> Sequence[NodeResourceManager]:
+        return NotImplemented
+
+    def allocate(self, resources: List[ResourceReplica]) -> Optional[NodeResourceManager]:
+        return NotImplemented
     
     def name(self) -> str:
         return self._name
@@ -63,6 +90,12 @@ class GlobalResourceManager(ResourceManager[ClusterResourceManager]):
             cluster.allocate(resource)
             return cluster
         return None
+    
+    def allocatable(self, resources: List[ResourceReplica]) -> Sequence[ClusterResourceManager]:
+        return NotImplemented
+    
+    def allocate(self, resources: List[ResourceReplica]) -> Optional[ClusterResourceManager]:
+        return NotImplemented
     
     
     

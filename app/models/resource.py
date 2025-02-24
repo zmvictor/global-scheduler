@@ -23,7 +23,6 @@ class Resource(BaseModel):
                 valid_gpu_exists = True
         return valid_gpu_exists and self.cpu >= 0 and self.memory_mb >= 0 and self.disk_gb >= 0
 
-    # TODO: Resource should support addition and subtraction
     def __add__(self, other: "Resource") -> "Resource":
         if not isinstance(other, Resource):
             return NotImplemented
