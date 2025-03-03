@@ -1,6 +1,6 @@
 from pydantic import BaseModel, field_validator, Field
 from enum import Enum
-from typing import Dict
+from typing import Dict, Optional
 
 
 class GPUTypes(str, Enum):
@@ -15,6 +15,7 @@ class Resource(BaseModel):
     cpu: float = Field(gt=0, description="CPU in cores", default=2.0)
     memory_mb: float = Field(gt=0, description="Memory in MB", default=4096.0)
     disk_gb: float = Field(gt=0, description="Disk in GB", default=100.0)
+    id: Optional[str] = None
     
     def is_valid(self) -> bool:
         valid_gpu_exists = False
@@ -40,7 +41,6 @@ class Resource(BaseModel):
             memory_mb = self.memory_mb + other.memory_mb,
             disk_gb = self.disk_gb + other.disk_gb
         )
-        
     
     def __sub__(self, other: "Resource") -> "Resource":
         if not isinstance(other, Resource):
@@ -59,3 +59,33 @@ class Resource(BaseModel):
             memory_mb = self.memory_mb - other.memory_mb,
             disk_gb = self.disk_gb - other.disk_gb
         )
+        
+    def __iadd__(self, other: "Resource") -> "Resource":
+        if not isinstance(other, Resource):
+            return NotImplemented
+        
+        for gpu_type, count in other.accepeted_gpu.items():
+            if gpu_type in self.accepeted_gpu:
+                self.accepeted_gpu[gpu_type] += count
+            else:
+                self.accepeted_gpu[gpu_type] = count
+        
+        self.cpu += other.cpu
+        self.memory_mb += other.memory_mb
+        self.disk_gb += other.disk_gb
+        return self
+    
+    def __isub__(self, other: "Resource") -> "Resource":
+        if not isinstance(other, Resource):
+            return NotImplemented
+        
+        for gpu_type, count in other.accepeted_gpu.items():
+            if gpu_type in self.accepeted_gpu:
+                self.accepeted_gpu[gpu_type] -= count
+            else:
+                self.accepeted_gpu[gpu_type] = -count
+        
+        self.cpu -= other.cpu
+        self.memory_mb -= other.memory_mb
+        self.disk_gb -= other.disk_gb
+        return self
