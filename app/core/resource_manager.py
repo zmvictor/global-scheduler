@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from app.models.resource import Resource
-from typing import Sequence, Tuple
+from typing import Sequence, Optional, List, Dict
 
 
 class ResourceManager(ABC):
@@ -22,12 +22,9 @@ class ResourceManager(ABC):
         pass
     
     @abstractmethod
-    def allocate_resource(self, resource: Resource) -> Tuple[bool, Resource]:
+    def allocate_resource(self, resource: Resource) -> Optional[Resource]:
         pass
     
     @abstractmethod
-    def release_resource(self, resource: Resource) -> Tuple[bool, Resource]:
+    def release_resource(self, resource: Resource) -> Optional[Resource]:
         pass
-    
-    
-    

@@ -39,7 +39,8 @@ class Resource(BaseModel):
             accepeted_gpu = accepeted_gpu,
             cpu = self.cpu + other.cpu,
             memory_mb = self.memory_mb + other.memory_mb,
-            disk_gb = self.disk_gb + other.disk_gb
+            disk_gb = self.disk_gb + other.disk_gb,
+            id = self.id
         )
     
     def __sub__(self, other: "Resource") -> "Resource":
@@ -57,7 +58,8 @@ class Resource(BaseModel):
             accepeted_gpu = accepeted_gpu,
             cpu = self.cpu - other.cpu,
             memory_mb = self.memory_mb - other.memory_mb,
-            disk_gb = self.disk_gb - other.disk_gb
+            disk_gb = self.disk_gb - other.disk_gb,
+            id = self.id
         )
         
     def __iadd__(self, other: "Resource") -> "Resource":
